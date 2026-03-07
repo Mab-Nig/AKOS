@@ -1,0 +1,44 @@
+- [ ] Preemptive.
+- [ ] Round-robin scheduling of tasks at equal priority.
+- [ ] Unlimited number of tasks.
+- [ ] Low interrupt disable time.
+- [ ] Deterministic:
+  - [ ] Interrupt response is deterministic.
+  - [ ] Execution times of OS services are deterministic.
+- [ ] Scalable
+  - [ ] Adding/Removing features is performed at compile time through
+    `#define`'s in `os_cfg.h`.
+  - [ ] Perform runtime checks on arguments:
+    - [ ] Not passing `NULL` pointers.
+    - [ ] Not calling task-level services from ISRs
+    - [ ] Arguments are within allowable range.
+    - [ ] Options specified are valid.
+- [ ] Portable.
+- [ ] ROMable.
+- [ ] Run-time configurable.
+- [ ] Unlimited number of tasks.
+- [ ] Unlimited number of priority levels.
+- [ ] Unlimited number of kernel objects.
+- [ ] Services.
+  - [ ] Mutexes: can be nested.
+  - [ ] Task suspension: can be nested.
+  - [ ] Software timers.
+  - [ ] Pend on multiple objects.
+  - [ ] Task signals.
+  - [ ] Task messages.
+  - [ ] Task registers.
+  - [ ] Error checking.
+  - [ ] Built-in performance measurements:
+    - [ ] Execution time of each task.
+    - [ ] Stack usage of each task.
+    - [ ] CPU usage.
+    - [ ] ISR-to-task and task-to-task response time.
+    - [ ] Peak number of entries in lists.
+    - [ ] Interrupt disable and scheduler lock time per task.
+- [ ] Can easily be optimized.
+- [ ] Deadlock prevention.
+- [ ] Tick handling at task level (SysTick handler hook).
+- [ ] User definable hooks.
+- [ ] Timestamps.
+- [ ] Built-in support for Kernel Awareness debuggers.
+- [ ] Object names.
