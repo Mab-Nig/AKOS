@@ -9,6 +9,7 @@
 
 # Project Structure
 
+``` text
 /
 |--os
 |  |--inc
@@ -33,3 +34,12 @@
 |--notes
 |
 +--README.md
+```
+
+# Milestone
+
+- Requirement gathering / System analysis / Architecture design / Module
+  design: **Apr 6, 2026**.
+- Coding + Unit testing: **May 18, 2026**.
+- Integration testing + System testing + Acceptance testing: **June 1,
+  2026**.
