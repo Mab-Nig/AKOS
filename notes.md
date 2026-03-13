@@ -17,7 +17,7 @@
 |  +--inc/
 |  +--src/
 |
-+--plat
++--port
 |  +--arch
 |  |  +--<arch>
 |  |     +--inc/
