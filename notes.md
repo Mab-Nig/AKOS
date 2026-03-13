@@ -11,27 +11,34 @@
 
 ``` text
 /
-|--os
-|  |--inc
-|  +--src
++--os
+|  +--cfg/
+|  |  +--os_cfg.h
+|  +--inc/
+|  +--src/
 |
-|--cmsis
-|  |--core
-|  |  |--inc
-|  |  +--src
++--plat
+|  +--arch
+|  |  +--<arch>
+|  |     +--inc/
+|  |     +--src/
 |  |
 |  +--dev
-|     |--inc
-|     |--src
-|     +--ld
+|     +--<vendor>
+|        +--<chip>
+|           +--inc/
+|           +--src/
+|           |  +--startup.c 
+|           +--linker.ld
 |
-|--ext
-|  +--lib0
-|     |--inc
-|     |--src
-|     +--lib
-|--docs
-|--notes
++--ext
+|  +--<lib>
+|     +--inc/
+|     +--src/
+|     +--lib/
+|
++--docs/
++--notes/
 |
 +--README.md
 ```
