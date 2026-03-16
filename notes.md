@@ -1,5 +1,5 @@
 - project structure
-- Makefile convention
+- makefile convention
 - toolchain
 - build flags
 - git workflow
@@ -28,7 +28,7 @@
 |        +--<chip>
 |           +--inc/
 |           +--src/
-|           |  +--startup.c 
+|           |  +--startup.c
 |           +--linker.ld
 |
 +--ext
@@ -48,5 +48,4 @@
 - Requirement gathering / System analysis / Architecture design / Module
   design: **Apr 6, 2026**.
 - Coding + Unit testing: **May 18, 2026**.
-- Integration testing + System testing + Acceptance testing: **June 1,
-  2026**.
+- Integration testing + System testing + Acceptance testing: **June 1, 2026**.
