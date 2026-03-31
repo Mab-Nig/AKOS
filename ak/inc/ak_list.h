@@ -5,8 +5,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct __ak_list_node ak_list_node_t;
-struct __ak_list_node {
+typedef struct _ak_list_node ak_list_node_t;
+struct _ak_list_node {
   ak_list_node_t *prev;
   ak_list_node_t *next;
 };
