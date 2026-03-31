@@ -1,4 +1,8 @@
 #ifndef AK_CFG_H
 #define AK_CFG_H
 
+#define AK_CFG_HEAP_SZ            0x200u
+#define AK_CFG_HEAP_ALIGN         4u
+#define AF_CFG_HEAP_CLEAR_ON_FREE 0u
+
 #endif /* AK_CFG_H */
