@@ -1,10 +1,11 @@
 BasedOnStyle: LLVM
 
-AlignAfterOpenBracket:     BlockIndent
-AlignArrayOfStructures:    Left
-AlignConsecutiveBitFields: Consecutive
-AlignConsecutiveMacros:    Consecutive
-AlignOperands:             DontAlign
+AlignAfterOpenBracket:       BlockIndent
+AlignArrayOfStructures:      Left
+AlignConsecutiveAssignments: None
+AlignConsecutiveBitFields:   Consecutive
+AlignConsecutiveMacros:      Consecutive
+AlignOperands:               DontAlign
 
 AllowShortBlocksOnASingleLine:              Always
 AllowShortCaseLabelsOnASingleLine:          false
@@ -15,9 +16,8 @@ AllowShortIfStatementsOnASingleLine:        Never
 AllowShortLambdasOnASingleLine:             All
 AllowShortLoopsOnASingleLine:               false
 
-BinPackArguments:            false
-BinPackParameters:           false
-PackConstructorInitializers: CurrentLine
+BinPackArguments:  true
+BinPackParameters: false
 
 BitFieldColonSpacing: Both
 
