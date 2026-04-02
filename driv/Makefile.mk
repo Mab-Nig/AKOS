@@ -1,3 +1,2 @@
-INCLUDE += -I driv/inc
-
+INCLUDE += -Idriv/inc
 SRCS 	+= driv/src/driv_uart.c
