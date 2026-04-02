@@ -1,67 +1,96 @@
-CC	= $(TOOLCHAIN)-gcc -std=c99 --sysroot=$(SYSROOT_DIR)
-CXX	= $(TOOLCHAIN)-g++ -std=c++17 --sysroot=$(SYSROOT_DIR)
+#####################################################################
+# @author: dt
+# @email : tien.ta.eswe@gmail.com
+# @date  : 25/03/2026
+#####################################################################
 
-ARCH_FLAGS	=
-INCS		=
+
+BOARD		?= stm32l151xx
+
+TARGET 		= ak-os-$(BOARD)
+BUILD_DIR 	= build/$(BOARD)
+
+PREFIX 		= arm-none-eabi-
+CC 			= $(PREFIX)gcc
+CXX			= $(PREFIX)g++
+AS 			= $(PREFIX)gcc -x assembler-with-cpp
+SZ 			= $(PREFIX)size
+LD			= $(PREFIX)ld
+OBJCOPY 	= $(PREFIX)objcopy
+OBJDUMP		= $(PREFIX)objdump
+
+CPU			=
+DEFINES		=
 SRCS		=
+INCLUDE		=
+ASM_SRCS	=
 LDSCRIPT	=
+OOCD_IF		=
+OOCD_TARGET =
 
+include test/$(BOARD)/Makefile.mk
 include ak/Makefile.mk
-# include port/Makefile.mk
-# include ext/Makefile.mk
-include test/Makefile.mk
-# include docs/Makefile.mk
+include driv/Makefile.mk
+include ext/Makefile.mk
+include port/Makefile.mk
 
-INC_FLAGS	= $(addprefix -I,$(INCS))
-OBJS		=										\
-	$(patsubst %.c,%.o,$(filter %.c,$(SRCS)))		\
-	$(patsubst %.cpp,%.o,$(filter %.cpp,$(SRCS)))
-DEPS		= $(OBJS:.o=.d)
+GENERAL_FLAGS = -O0 -g3 						\
+				-fdata-sections 				\
+				-ffunction-sections 			\
+				-Wall -Wshadow -Wpointer-arith	\
+				-MMD -MP						\
+				--specs=nano.specs  			\
+				--specs=nosys.specs				\
+				-fsingle-precision-constant
 
-CPPFLAGS = -MMD -MP $(INC_FLAGS)
-CFLAGS =								\
-	$(ARCH_FLAGS)						\
-	-flto								\
-	-ffunction-sections -fdata-sections	\
-	-Wall -Werror						\
-	-Wshadow							\
-	-Wcast-qual							\
-	-Winline							\
-	-Wpointer-arith						\
-	-Wwrite-strings						\
-	-Wno-stringop-overflow				\
-	-Wstrict-prototypes					\
-	-save-temps							\
-	-fverbose-asm
-CXXFLAGS = -fno-exceptions -fno-rtti -fno-unwind-tables -fomit-frame-pointer
-LDFLAGS = 				\
-	-T$(LDSCRIPT) 		\
-	--specs=nosys.specs	\
-	--specs=nano.specs 	\
-	-static				\
-	-flto				\
-	-Wl,--gc-sections
+CFLAGS  = $(CPU) $(DEFINES) $(INCLUDE) $(GENERAL_FLAGS) -std=c99 -MF"$(@:%.o=%.d)"
+CXXFLAGS = $(CPU) $(DEFINES) $(INCLUDE) $(GENERAL_FLAGS) -std=c++11 -MF"$(@:%.o=%.d)"
 
-.PHONY: prebuild test_dbg test_rel clean
+LDFLAGS = $(CPU)									\
+		 -T$(LDSCRIPT)								\
+		 -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref	\
+		 -Wl,--gc-sections
 
-test_rel: CFLAGS += -Os
-test_rel: prebuild $(OBJS)
-	$(CXX) $(OBJS) -o build/release/test $(LDFLAGS)
+OBJS	 = $(addprefix $(BUILD_DIR)/, $(SRCS:.c=.o))
+ASM_OBJS = $(addprefix $(BUILD_DIR)/, $(ASM_SRCS:.s=.o))
 
-test_dbg: CFLAGS += -Og -g
-test_dbg: prebuild $(OBJS)
-	$(CXX) $(OBJS) -o build/debug/test $(LDFLAGS)
+.PHONY: prebuild all clean print_size flash
+
+all: prebuild $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).bin print_size
 
 prebuild:
-	@mkdir build/
+	@mkdir -p $(dir $@)
 
-build/%.o: %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+$(BUILD_DIR)/$(TARGET).elf: $(OBJS) $(ASM_OBJS)
+	@echo "[LINK] $@"
+	$(CC) $^ $(LDFLAGS) -o $@
 
-build/%.o: %.cpp
-	$(CXX) $(CPPFLAGS) $(CFLAGS) $(CXXFLAGS) -c $< -o $@
+$(BUILD_DIR)/$(TARGET).bin: $(BUILD_DIR)/$(TARGET).elf
+	@echo "[BIN] $@"
+	$(OBJCOPY) -O binary $< $@
+
+$(BUILD_DIR)/%.o: %.c
+	@echo "[CC] $<"
+	$(CC) -c $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/%.o: %.cpp
+	@echo "[CXX] $<"
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+$(BUILD_DIR)/%.o: %.s
+	@echo "[AS] $<"
+	$(AS) -c $(CFLAGS) $< -o $@
+
+print_size: $(BUILD_DIR)/$(TARGET).elf
+	@echo ""
+	$(SZ) $<
 
 clean:
-	@rm -rf build/
+	@echo "[CLEAN] Remove directory: $(BUILD_DIR)"
+	@rm -rf $(BUILD_DIR)
 
--include $(DEPS)
+flash: all
+	@echo "[FLASH] Loading code by OpenOCD ..."
+	openocd -f interface/$(OOCD_IF)-f target/$(OOCD_TARGET) -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+
+-include $(wildcard $(BUILD_DIR)/**/*.d)
