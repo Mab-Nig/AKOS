@@ -5,4 +5,6 @@
 #define AK_CFG_HEAP_ALIGN         4u
 #define AF_CFG_HEAP_CLEAR_ON_FREE 0u
 
+#define AK_CFG_PRIO_MAX 255u
+
 #endif /* AK_CFG_H */

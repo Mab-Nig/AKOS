@@ -1,15 +1,15 @@
 #ifndef AK_LIST_H
 #define AK_LIST_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 typedef struct _ak_list_node ak_list_node_t;
 struct _ak_list_node {
   ak_list_node_t *prev;
   ak_list_node_t *next;
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 /** Insert new_node before pos.
  * @return new_node if success. NULL if not.
