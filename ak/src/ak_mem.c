@@ -43,13 +43,15 @@ static _ak_mem_blk_hdr_t *_ak_mem_last_blk_p;
 static void *_ak_mem_start_p;
 
 /* These two must stick together. */
-/* clang-format off */
-static _ak_mem_blk_hdr_t _ak_mem_ini_blk = {
-  .node = {.prev = NULL, .next = NULL},
-  .sz = AK_BLK_HDR_SZ + AK_MEM_SZ,
-  .state = AK_BLK_BUSY
+static _ak_mem_blk_hdr_t
+#ifdef __GNUC__
+  __attribute__((aligned(AK_MEM_ALIGN)))
+#endif /* __GNUC__ */
+  _ak_mem_ini_blk = {
+    .node = {.prev = NULL, .next = NULL},
+    .sz = AK_BLK_HDR_SZ + AK_MEM_SZ,
+    .state = AK_BLK_BUSY
 };
-/* clang-format on */
 static uint8_t
 #ifdef __GNUC__
   __attribute__((aligned(AK_MEM_ALIGN)))
@@ -57,32 +59,35 @@ static uint8_t
   _ak_mem_arr[AK_CFG_HEAP_SZ];
 
 static void _ak_mem_init(void);
-static _ak_mem_blk_hdr_t *_ak_mem_find_fit(size_t sz);
-static _ak_mem_blk_hdr_t *_ak_mem_get_blk(void *addr);
+static inline _ak_mem_blk_hdr_t *_ak_mem_find_fit(size_t sz);
+static inline _ak_mem_blk_hdr_t *_ak_mem_get_blk(void *addr);
+static inline _ak_mem_blk_hdr_t *_ak_mem_rem_blk(_ak_mem_blk_hdr_t *p_blk);
 
 void *ak_mem_alloc(size_t sz) {
   if (!_ak_mem_start_p) {
     _ak_mem_init();
   }
+
+  sz = AK_ALIGN_CEIL(sz);
   if (!sz || _ak_mem_avail_sz < sz) {
     return NULL;
   }
 
   _ak_mem_blk_hdr_t *p_blk = _ak_mem_find_fit(sz);
   if (p_blk) {
-    size_t blk_sz_busy = AK_BLK_HDR_SZ + sz;
-    size_t blk_sz_free = p_blk->sz - blk_sz_busy;
-    _ak_mem_avail_sz -= blk_sz_busy;
+    size_t blk_busy_sz = AK_BLK_HDR_SZ + sz;
+    size_t blk_free_sz = p_blk->sz - blk_busy_sz;
+    _ak_mem_avail_sz -= blk_busy_sz;
     p_blk->state = AK_BLK_BUSY;
 
-    if (blk_sz_free >= AK_BLK_HDR_SZ) {
+    if (blk_free_sz >= AK_BLK_HDR_SZ) {
       _ak_mem_avail_sz -= AK_BLK_HDR_SZ;
-      p_blk->sz = blk_sz_busy;
+      p_blk->sz = blk_busy_sz;
 
       _ak_mem_blk_hdr_t *p_new_blk =
-        (_ak_mem_blk_hdr_t *)((size_t)p_blk + blk_sz_busy);
+        (_ak_mem_blk_hdr_t *)((size_t)p_blk + blk_busy_sz);
       p_new_blk->state = AK_BLK_FREE;
-      p_new_blk->sz = blk_sz_free;
+      p_new_blk->sz = blk_free_sz;
       ak_list_ins_aft(&p_blk->node, &p_new_blk->node);
       if (!p_new_blk->node.next) {
         _ak_mem_last_blk_p = p_new_blk;
@@ -93,6 +98,11 @@ void *ak_mem_alloc(size_t sz) {
 }
 
 int ak_mem_free(void *addr) {
+  if (!_ak_mem_start_p) {
+    _ak_mem_init();
+    return -1;
+  }
+
   if (!addr || !AK_IS_ALIGNED(addr)) {
     return -1;
   }
@@ -112,24 +122,16 @@ int ak_mem_free(void *addr) {
     _ak_mem_blk_hdr_t *p_prev_blk = (_ak_mem_blk_hdr_t *)p_blk->node.prev;
     _ak_mem_blk_hdr_t *p_next_blk = (_ak_mem_blk_hdr_t *)p_blk->node.next;
     if (p_next_blk && p_next_blk->state == AK_BLK_FREE) {
-      _ak_mem_avail_sz += AK_BLK_HDR_SZ;
-      p_blk->sz += p_next_blk->sz;
-      ak_list_rem(&p_next_blk->node);
-#ifdef AK_MEM_CLEAR_ON_FREE
-      memset(p_next_blk, 0, AK_BLK_HDR_SZ);
-#endif /* AK_MEM_CLEAR_ON_FREE */
+      _ak_mem_rem_blk(p_next_blk);
     }
     if (p_prev_blk && p_prev_blk->state == AK_BLK_FREE) {
-      _ak_mem_avail_sz += AK_BLK_HDR_SZ;
-      p_prev_blk->sz += p_blk->sz;
-      ak_list_rem(&p_blk->node);
-#ifdef AK_MEM_CLEAR_ON_FREE
-      memset(p_blk, 0, AK_BLK_HDR_SZ);
-#endif /* AK_MEM_CLEAR_ON_FREE */
+      _ak_mem_rem_blk(p_blk);
     }
   }
   return ret;
 }
+
+size_t ak_mem_get_avail_sz(void) { return _ak_mem_avail_sz; }
 
 void _ak_mem_init(void) {
   _ak_mem_avail_sz = AK_MEM_SZ;
@@ -160,4 +162,15 @@ _ak_mem_blk_hdr_t *_ak_mem_get_blk(void *addr) {
     }
   }
   return p;
+}
+
+_ak_mem_blk_hdr_t *_ak_mem_rem_blk(_ak_mem_blk_hdr_t *p_blk) {
+  _ak_mem_blk_hdr_t *p_prev_blk = (_ak_mem_blk_hdr_t *)p_blk->node.prev;
+  _ak_mem_avail_sz += AK_BLK_HDR_SZ;
+  p_prev_blk->sz += p_blk->sz;
+  ak_list_rem(&p_blk->node);
+#ifdef AK_MEM_CLEAR_ON_FREE
+  memset(p_blk, 0, AK_BLK_HDR_SZ);
+#endif /* AK_MEM_CLEAR_ON_FREE */
+  return p_prev_blk;
 }

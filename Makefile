@@ -26,6 +26,7 @@ CFLAGS =								\
 	-Wall -Werror						\
 	-Wshadow							\
 	-Wcast-qual							\
+	-Winline							\
 	-Wpointer-arith						\
 	-Wwrite-strings						\
 	-Wno-stringop-overflow				\

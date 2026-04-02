@@ -9,6 +9,7 @@ extern "C" {
 
 void *ak_mem_alloc(size_t sz);
 int ak_mem_free(void *addr);
+size_t ak_mem_get_avail_sz(void);
 
 #ifdef __cplusplus
 }
