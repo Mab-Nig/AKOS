@@ -1,0 +1,27 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug STM32 (OpenOCD)",
+      "type": "cortex-debug",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/my_project.elf",
+      "svdFile": ".svd/STM32F103.svd",
+      "servertype": "openocd",
+      "toolchainPrefix": "arm-none-eabi",
+      "device": "STM32F103",
+      "interface": "swd",
+      "configFiles": [
+        "interface/stlink.cfg",
+        "target/stm32f1x.cfg"
+      ],
+      "postRestartCommands": [
+                "break main",
+                "continue"
+            ],
+      "showDevDebugOutput": "none",
+      "preLaunchTask": "build"
+    }
+  ]
+}
