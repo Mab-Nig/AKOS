@@ -88,7 +88,7 @@ void *ak_mem_alloc(size_t sz) {
         (_ak_mem_blk_hdr_t *)((size_t)p_blk + blk_busy_sz);
       p_new_blk->state = AK_BLK_FREE;
       p_new_blk->sz = blk_free_sz;
-      ak_list_ins_aft(&p_blk->node, &p_new_blk->node);
+      ak_list_ins_aft(&p_blk->node, &p_new_blk->node, 0);
       if (!p_new_blk->node.next) {
         _ak_mem_last_blk_p = p_new_blk;
       }
@@ -168,7 +168,7 @@ _ak_mem_blk_hdr_t *_ak_mem_rem_blk(_ak_mem_blk_hdr_t *p_blk) {
   _ak_mem_blk_hdr_t *p_prev_blk = (_ak_mem_blk_hdr_t *)p_blk->node.prev;
   _ak_mem_avail_sz += AK_BLK_HDR_SZ;
   p_prev_blk->sz += p_blk->sz;
-  ak_list_rem(&p_blk->node);
+  ak_list_rm(&p_blk->node, 0);
 #ifdef AK_MEM_CLEAR_ON_FREE
   memset(p_blk, 0, AK_BLK_HDR_SZ);
 #endif /* AK_MEM_CLEAR_ON_FREE */

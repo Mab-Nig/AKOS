@@ -19,6 +19,10 @@ extern "C" {
 
 int ak_prio_bit_set(ak_prio_t prio);
 int ak_prio_bit_clear(ak_prio_t prio);
+
+/*
+ * @return Highest set priority. 0 if none is found.
+ */
 ak_prio_t ak_prio_get_max(void);
 
 #ifdef __cplusplus

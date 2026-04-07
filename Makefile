@@ -40,6 +40,7 @@ GENERAL_FLAGS = --sysroot=$(SYSROOT_DIR)		\
 				-fdata-sections 				\
 				-ffunction-sections 			\
 				-Wall -Wshadow -Wpointer-arith	\
+				-Wno-unused-includes			\
 				-MMD -MP						\
 				--specs=nano.specs  			\
 				--specs=nosys.specs				\

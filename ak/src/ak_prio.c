@@ -10,8 +10,9 @@
 #  define AK_PRIO_MAX 255u
 #endif /* AK_CFG_PRIO_MAX */
 
-#define AK_NPRIO_PER_ENT  sizeof(size_t)
-#define AK_PRIO_BITSET_SZ (AK_PRIO_MAX / AK_NPRIO_PER_ENT + 1)
+#define AK_NPRIO_PER_ENT sizeof(size_t)
+#define AK_PRIO_BITSET_SZ                                                      \
+  (((AK_PRIO_MAX >> AK_NPRIO_PER_ENT) << AK_NPRIO_PER_ENT) + 1)
 
 static size_t _ak_prio_bitset[AK_PRIO_BITSET_SZ];
 
@@ -20,7 +21,7 @@ int ak_prio_bit_set(ak_prio_t prio) {
     return -1;
   }
 
-  ak_prio_t ent = prio / AK_NPRIO_PER_ENT;
+  ak_prio_t ent = (prio >> AK_NPRIO_PER_ENT) << AK_NPRIO_PER_ENT;
   _ak_prio_bitset[ent] |= 1 << (ent & (AK_NPRIO_PER_ENT - 1));
   return 0;
 }
