@@ -28,12 +28,12 @@ extern uint32_t ak_sched_lock_nest_cnt;
             }                                   \
             OS_CRITICAL_EXIT();                 \
         }   while(0)
-#endif /* AK_CFG_POST_DEFERRED_EN == ENABLE */
+#endif /* AK_CFG_POST_DEFERRED_EN*/
 
 #if (!AK_CFG_POST_DEFERRED_EN)
 #define AK_CRITICAL_ENTER()         OS_CRITICAL_ENTER()
 #define AK_CRITICAL_EXIT()          OS_CRITICAL_EXIT()
-#endif /* AK_CFG_POST_DEFERRED_EN == DISABLE */
+#endif /* !AK_CFG_POST_DEFERRED_EN */
 
 #ifdef __cplusplus
 }
