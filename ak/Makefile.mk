@@ -1,3 +1,2 @@
-INCLUDE += -Iak/inc
-
-SRCS 	+=  ak/src/ak_list.c
+INCS += ak/inc
+SRCS += ak/src/ak_list.c

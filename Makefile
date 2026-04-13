@@ -1,100 +1,84 @@
-#####################################################################
-# @author: dt
-# @email : tien.ta.eswe@gmail.com
-# @date  : 25/03/2026
-#####################################################################
+### Import env.sh first! ###
 
-### Import environment from env.sh first! ###
+AS	= $(TOOLCHAIN)-gcc -x assembler-with-cpp
+CC	= $(TOOLCHAIN)-gcc -std=c99 --sysroot=$(SYSROOT_DIR)
+CXX	= $(TOOLCHAIN)-g++ -std=c++17 --sysroot=$(SYSROOT_DIR)
 
-BOARD		?= stm32l151xx
-
-TARGET 		= ak-os-$(BOARD)
-BUILD_DIR 	= build/$(BOARD)
-
-PREFIX		= $(TOOLCHAIN)-
-CC			= $(PREFIX)gcc
-CXX			= $(PREFIX)g++
-AS 			= $(PREFIX)gcc -x assembler-with-cpp
-SZ 			= $(PREFIX)size
-LD			= $(PREFIX)ld
-OBJCOPY 	= $(PREFIX)objcopy
-OBJDUMP		= $(PREFIX)objdump
-
-CPU			=
-DEFINES		=
+TARGET		=
+ARCH_FLAGS	=
+DEFS		=
+INCS		=
 SRCS		=
-INCLUDE		=
-ASM_SRCS	=
 LDSCRIPT	=
-OOCD_IF		=
-OOCD_TARGET =
 
-include test/$(BOARD)/Makefile.mk
 include ak/Makefile.mk
-include driv/Makefile.mk
-include ext/Makefile.mk
 include port/Makefile.mk
+include ext/Makefile.mk
+include test/Makefile.mk
+include docs/Makefile.mk
 
-GENERAL_FLAGS = --sysroot=$(SYSROOT_DIR)		\
-				-O0 -g3 						\
-				-fdata-sections 				\
-				-ffunction-sections 			\
-				-Wall -Wshadow -Wpointer-arith	\
-				-Wno-unused-includes			\
-				-MMD -MP						\
-				--specs=nano.specs  			\
-				--specs=nosys.specs				\
-				-fsingle-precision-constant
+INC_FLAGS	= $(addprefix -I,$(INCS))
+DEF_FLAGS	= $(addprefix -D,$(DEFS))
+OBJS =\
+	$(patsubst %.c,%.o,$(filter %.c,$(SRCS)))\
+	$(patsubst %.cpp,%.o,$(filter %.cpp,$(SRCS)))\
+DEPS 		= $(OBJS:.o=.d)
 
-CFLAGS  = $(CPU) $(DEFINES) $(INCLUDE) $(GENERAL_FLAGS) -std=c99 -MF"$(@:%.o=%.d)"
-CXXFLAGS = $(CPU) $(DEFINES) $(INCLUDE) $(GENERAL_FLAGS) -std=c++11 -MF"$(@:%.o=%.d)"
+CPPFLAGS = -MMD -MP $(DEF_FLAGS) $(INC_FLAGS)
+CFLAGS =\
+	$(ARCH_FLAGS)\
+	-flto\
+	-ffunction-sections -fdata-sections\
+	-Wall -Werror\
+	-Wshadow\
+	-Wcast-qual\
+	-Wpointer-arith\
+	-Wwrite-strings\
+	-Wno-stringop-overflow\
+	-Wstrict-prototypes\
+	-save-temps\
+	-fverbose-asm\
+CXXFLAGS =\
+	$(CFLAGS)\
+	-fno-exceptions -fno-rtti -fno-unwind-tables -fomit-frame-pointer\
+LDFLAGS =\
+	-T$(LDSCRIPT)\
+	--specs=nosys.specs\
+	--specs=nano.specs\
+	-static\
+	-flto\
+	-Wl,--gc-sections\
 
-LDFLAGS = $(CPU)									\
-		 -T$(LDSCRIPT)								\
-		 -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref	\
-		 -Wl,--gc-sections
+.PHONY: prebuild $(TARGET)_dbg $(TARGET)_rel clean
 
-OBJS	 = $(addprefix $(BUILD_DIR)/, $(SRCS:.c=.o))
-ASM_OBJS = $(addprefix $(BUILD_DIR)/, $(ASM_SRCS:.s=.o))
+test_dbg: CFLAGS += -g
+test_dbg: CXXFLAGS += -g
+test_dbg: prebuild $(OBJS)
+	@echo "Building target $@."
+	$(CXX) $(OBJS) -o build/dbg/$(TARGET) $(LDFLAGS)
 
-.PHONY: all clean print_size flash
+test_rel: CFLAGS += -DNDEBUG
+test_rel: CXXFLAGS += -DNDEBUG
+test_rel: prebuild $(OBJS)
+	@echo "Building target $@."
+	$(CXX) $(OBJS) -o build/rel/$(TARGET) $(LDFLAGS)
 
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).bin print_size
+prebuild:
+	@mkdir build/
 
-$(BUILD_DIR)/$(TARGET).elf: $(OBJS) $(ASM_OBJS)
-	@echo "[LINK] $@"
-	@mkdir -p $(dir $@)
-	$(CC) $^ $(LDFLAGS) -o $@
+build/%.o: %.c
+	@mkdir -p "$(dir $@)"
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/$(TARGET).bin: $(BUILD_DIR)/$(TARGET).elf
-	@echo "[BIN] $@"
-	@mkdir -p $(dir $@)
-	$(OBJCOPY) -O binary $< $@
+build/%.o: %.cpp
+	@mkdir -p "$(dir $@)"
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/%.o: %.c
-	@echo "[CC] $<"
-	@mkdir -p $(dir $@)
-	$(CC) -c $(CFLAGS) $< -o $@
-
-$(BUILD_DIR)/%.o: %.cpp
-	@echo "[CXX] $<"
-	@mkdir -p $(dir $@)
-	$(CXX) -c $(CXXFLAGS) $< -o $@
-
-$(BUILD_DIR)/%.o: %.s
-	@echo "[AS] $<"
-	@mkdir -p $(dir $@)
-	$(AS) -c $(CFLAGS) $< -o $@
-
-print_size: $(BUILD_DIR)/$(TARGET).elf
-	$(SZ) $<
+build/%.o: %.s
+	@mkdir -p "$(dir $@)"
+	$(AS) $(CFLAGS) -c $< -o $@
 
 clean:
-	@echo "[CLEAN] Remove directory: $(BUILD_DIR)"
-	@rm -rf $(BUILD_DIR)
+	@rm -rf build/
 
-flash: all
-	@echo "[FLASH] Loading code by OpenOCD ..."
-	openocd -f interface/$(OOCD_IF)-f target/$(OOCD_TARGET) -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
-
--include $(wildcard $(BUILD_DIR)/**/*.d)
+-include $(DEPS)

@@ -1,3 +1,2 @@
-INCLUDE	+= -Iport
-
-SRCS	+=
+INCS += port
+SRCS +=
