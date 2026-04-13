@@ -50,7 +50,7 @@ static _ak_mem_blk_hdr_t
   _ak_mem_ini_blk = {
     .node = {.prev = NULL, .next = NULL},
     .sz = AK_BLK_HDR_SZ + AK_MEM_SZ,
-    .state = AK_BLK_BUSY
+    .state = AK_BLK_FREE
 };
 static uint8_t
 #ifdef __GNUC__
@@ -147,7 +147,7 @@ void _ak_mem_init(void) {
 _ak_mem_blk_hdr_t *_ak_mem_find_fit(size_t sz) {
   _ak_mem_blk_hdr_t *p = _ak_mem_first_blk_p;
   for (; p; p = (_ak_mem_blk_hdr_t *)p->node.next) {
-    if (p->sz - AK_BLK_HDR_SZ >= sz) {
+    if (p->state == AK_BLK_FREE && p->sz - AK_BLK_HDR_SZ >= sz) {
       break;
     }
   }
