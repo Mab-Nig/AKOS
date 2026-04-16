@@ -1,4 +1,6 @@
 .cache/
 build/
+ext/CMock/
+ext/Unity/
 compile_commands.json
 *.org
