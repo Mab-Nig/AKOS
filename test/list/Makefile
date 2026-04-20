@@ -11,6 +11,7 @@ INCS = $(AK_INCS) $(UNITY_INCS)
 SRCS =\
 	$(PRJ_DIR)/ak/src/ak_list.c\
 	$(UNITY_SRCS)\
+	$(CURR_DIR)/tests.c\
 	$(CURR_DIR)/main.c\
 
 include $(PRJ_DIR)/mk/toolchain.mk

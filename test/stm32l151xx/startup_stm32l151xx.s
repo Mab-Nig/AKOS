@@ -114,7 +114,6 @@ vector_table:
 .type Reset_Handler, %function
 
 Reset_Handler:
-
 	bl SystemInit
 
 	movs r0, #0x00
