@@ -9,13 +9,14 @@ ak_list_ins_bef(ak_list_node_t *pos, ak_list_node_t *new_node, size_t offset) {
     return NULL;
   }
 
+  void *new_wrapper = (uint8_t *)new_node - offset;
   new_node->next = (uint8_t *)pos - offset;
-  new_node->prev = (uint8_t *)pos->prev - offset;
+  new_node->prev = pos->prev;
   if (pos->prev) {
-    FWD_OFFSET(ak_list_node_t *, pos->prev, offset)->next = new_node;
+    FWD_OFFSET(ak_list_node_t *, pos->prev, offset)->next = new_wrapper;
   }
-  pos->prev = new_node;
-  return new_node;
+  pos->prev = new_wrapper;
+  return new_wrapper;
 }
 
 void *
@@ -24,13 +25,14 @@ ak_list_ins_aft(ak_list_node_t *pos, ak_list_node_t *new_node, size_t offset) {
     return NULL;
   }
 
+  void *new_wrapper = (uint8_t *)new_node - offset;
   new_node->prev = (uint8_t *)pos - offset;
-  new_node->next = (uint8_t *)pos->next - offset;
+  new_node->next = pos->next;
   if (pos->next) {
-    FWD_OFFSET(ak_list_node_t *, pos->next, offset)->prev = new_node;
+    FWD_OFFSET(ak_list_node_t *, pos->next, offset)->prev = new_wrapper;
   }
-  pos->next = new_node;
-  return new_node;
+  pos->next = new_wrapper;
+  return new_wrapper;
 }
 
 void *ak_list_rm(ak_list_node_t *pos, size_t offset) {
