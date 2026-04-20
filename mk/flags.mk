@@ -33,7 +33,7 @@ else
 	DEF_FLAGS += -DNDEBUG
 endif
 
-ifeq ($(PLATFORM),target)
+ifeq ($(PLATFORM_LCASE),target)
 	LDFLAGS += -static
 endif
 
