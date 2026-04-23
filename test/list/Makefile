@@ -16,7 +16,7 @@ SRCS =\
 
 include $(PRJ_DIR)/mk/toolchain.mk
 include $(PRJ_DIR)/mk/flags.mk
-include $(PRJ_DIR)/mk/vars.mk
+include $(PRJ_DIR)/mk/files.mk
 
 .PHONY: all prebuild clean
 

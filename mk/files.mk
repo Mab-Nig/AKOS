@@ -1,9 +1,6 @@
 ifndef SRCS
 	$(error [VARS] SRCS is not defined.)
 endif
-ifndef BUILD_DIR
-	$(error [VARS] BUILD_DIR is not defined.)
-endif
 
 OBJS_C   = $(SRCS:.c=.o)
 OBJS_CPP = $(OBJS_C:.cpp=.o)

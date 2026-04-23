@@ -1,8 +1,7 @@
 MODE       ?= debug
 MODE_LCASE = $(shell echo $(MODE) | tr '[:upper:]' '[:lower:]')
 
-PLATFORM       ?= target
-PLATFORM_LCASE = $(shell echo $(PLATFORM) | tr '[:upper:]' '[:lower:]')
+$(info [FLAGS] MODE is either 'debug' or 'release'. MODE=debug by default.)
 
 ifndef INCS
 	$(error [FLAGS] INCS is not defined.)
@@ -24,6 +23,9 @@ DEF_FLAGS = $(addprefix -D,$(DEFS))
 
 ifdef LDSCRIPT
 	LDSCRIPT_FLAG = -T$(LDSCRIPT)
+	$(info [FLAGS] LDSCRIPT=$(LDSCRIPT).)
+else
+	$(info [FLAGS] Specify linker script through LDSCRIPT.)
 endif
 
 ifeq ($(MODE_LCASE),debug)
@@ -33,10 +35,6 @@ else
 	DEF_FLAGS += -DNDEBUG
 endif
 
-ifeq ($(PLATFORM_LCASE),target)
-	LDFLAGS += -static
-endif
-
 CPPFLAGS = -MMD -MP $(DEF_FLAGS) $(INC_FLAGS)
 CFLAGS   = $(ARCH_FLAGS) $(OPT_FLAGS) $(COMMON_FLAGS)
 CXXFLAGS =\
@@ -44,4 +42,4 @@ CXXFLAGS =\
 	-fno-exceptions -fno-rtti -fno-unwind-tables -fomit-frame-pointer
 LDFLAGS =\
 	$(LDSCRIPT_FLAG) $(ARCH_FLAGS) $(SPECS_FLAGS)\
-	-flto -Wl,--gc-sections
+	-static -flto -Wl,--gc-sections

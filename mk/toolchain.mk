@@ -1,5 +1,7 @@
 ifndef PLATFORM
 	$(error [TOOLCHAIN] PLATFORM must be either 'host' or 'target'.)
+else
+	$(info [TOOLCHAIN] PLATFORM=$(PLATFORM))
 endif
 PLATFORM_LCASE = $(shell echo $(PLATFORM) | tr '[:upper:]' '[:lower:]')
 
