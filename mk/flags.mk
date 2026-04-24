@@ -4,7 +4,7 @@ MODE_LCASE = $(shell echo $(MODE) | tr '[:upper:]' '[:lower:]')
 $(info [FLAGS] MODE is either 'debug' or 'release'. MODE=debug by default.)
 
 ifndef INCS
-	$(error [FLAGS] INCS is not defined.)
+    $(error [FLAGS] INCS is not defined.)
 endif
 
 COMMON_FLAGS =\
@@ -22,10 +22,10 @@ INC_FLAGS = $(addprefix -I,$(INCS))
 DEF_FLAGS = $(addprefix -D,$(DEFS))
 
 ifdef LDSCRIPT
-	LDSCRIPT_FLAG = -T$(LDSCRIPT)
-	$(info [FLAGS] LDSCRIPT=$(LDSCRIPT).)
+    LDSCRIPT_FLAG = -T$(LDSCRIPT)
+    $(info [FLAGS] LDSCRIPT=$(LDSCRIPT).)
 else
-	$(info [FLAGS] Specify linker script through LDSCRIPT.)
+    $(info [FLAGS] Specify linker script through LDSCRIPT.)
 endif
 
 ifeq ($(MODE_LCASE),debug)

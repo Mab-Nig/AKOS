@@ -1,9 +1,11 @@
 ifndef TEST
-	$(error [TEST] TEST is not defined.)
+    $(error [TEST] TEST is not defined.)
+else
+    $(info [TEST] TEST=$(TEST).)
 endif
 TEST_LCASE = $(shell echo $(TEST) | tr '[:upper:]' '[:lower:]')
 
-TESTS = list
+TESTS = list prio
 
 .PHONY: prebuild all $(TESTS)
 

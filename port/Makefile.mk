@@ -1,2 +1,2 @@
-INCS += port
-SRCS +=
+PORT_INCS += $(PRJ_DIR)/port
+PORT_SRCS +=
