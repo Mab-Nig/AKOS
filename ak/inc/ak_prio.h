@@ -1,27 +1,22 @@
 #ifndef AK_PRIO_H
 #define AK_PRIO_H
 
-#include "ak_cfg.h"
-
 #include <stdint.h>
 
-#if (AK_CFG_PRIO_MAX <= 255)
-typedef uint8_t ak_prio_t;
-#elif (AK_CFG_PRIO_MAX <= (1 << 16) - 1)
-typedef uint16_t ak_prio_t;
-#else
-typedef uint32_t ak_prio_t;
-#endif /* AK_CFG_PRIO_MAX */
+typedef int ak_prio_t;
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
+void ak_prio_reset(void);
+
+/* prio must start from 1 */
 int ak_prio_bit_set(ak_prio_t prio);
 int ak_prio_bit_clear(ak_prio_t prio);
 
 /*
- * @return Highest set priority. 0 if none is found.
+ * @return Highest set priority. -1 if none is found.
  */
 ak_prio_t ak_prio_get_max(void);
 

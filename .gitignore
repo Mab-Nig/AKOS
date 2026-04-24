@@ -2,5 +2,6 @@
 build/
 ext/CMock/
 ext/Unity/
+test/*/
 compile_commands.json
 *.org

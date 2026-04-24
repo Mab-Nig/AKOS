@@ -5,7 +5,7 @@ PLATFORM       ?= target
 PLATFORM_LCASE = $(shell echo $(PLATFORM) | tr '[:upper:]' '[:lower:]')
 
 ifndef INCS
-	$(error [FLAGS] INCS is not defined.)
+    $(error [FLAGS] INCS is not defined.)
 endif
 
 COMMON_FLAGS =\
@@ -23,7 +23,10 @@ INC_FLAGS = $(addprefix -I,$(INCS))
 DEF_FLAGS = $(addprefix -D,$(DEFS))
 
 ifdef LDSCRIPT
-	LDSCRIPT_FLAG = -T$(LDSCRIPT)
+    LDSCRIPT_FLAG = -T$(LDSCRIPT)
+    $(info [FLAGS] LDSCRIPT=$(LDSCRIPT).)
+else
+    $(info [FLAGS] Specify linker script through LDSCRIPT.)
 endif
 
 ifeq ($(MODE_LCASE),debug)
