@@ -19,4 +19,4 @@ $(RULE): prebuild
 endif
 
 prebuild:
-	. setup.sh
+	. ./setup.sh
