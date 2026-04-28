@@ -5,36 +5,60 @@
 #include "ak_task.h"
 
 #include <stddef.h>
+#include <stdio.h>
 
-ak_tcb_t* ak_sched_running;
+ak_tcb_t* ak_sched_run;
 ak_tcb_t* ak_sched_high_rdy;
-static ak_tcb_t* _ak_rdy_tbl[AK_CFG_PRIO_MAX]; /* prio idx+1 at idx  */
-static ak_tcb_t* _ak_rdy_ends[AK_CFG_PRIO_MAX];
+static ak_tcb_t* _ak_rdy_tbl[AK_CFG_PRIO_MAX + 1];
+static ak_tcb_t* _ak_rdy_ends[AK_CFG_PRIO_MAX + 1];
 
 static inline void _ak_sched_upd_high_rdy(void);
-static ak_prio_t _ak_sched_rdy_ins(ak_tcb_t* task);
+static int _ak_sched_rdy_ins(ak_tcb_t* task);
 static int _ak_sched_rdy_rm(ak_tcb_t* task);
+
+void ak_sched_reset(void) {
+  ak_sched_run = NULL;
+  ak_sched_high_rdy = NULL;
+  ak_prio_reset();
+  for (int i = 0; i <= AK_CFG_PRIO_MAX; ++i) {
+    _ak_rdy_tbl[i] = NULL;
+    _ak_rdy_ends[i] = NULL;
+  }
+}
+
+void ak_sched_turnover(void) {
+  _ak_sched_upd_high_rdy();
+
+  ak_tcb_t* tmp = ak_sched_run;
+  ak_sched_run = ak_sched_high_rdy;
+  ak_sched_high_rdy = tmp;
+
+  _ak_sched_rdy_rm(ak_sched_run);
+  _ak_sched_rdy_ins(ak_sched_high_rdy);
+}
 
 void _ak_sched_upd_high_rdy(void) {
   ak_prio_t max_prio = ak_prio_get_max();
-  ak_sched_high_rdy = (max_prio ? _ak_rdy_tbl[max_prio - 1] : NULL);
+  ak_sched_high_rdy = (max_prio >= 0 ? _ak_rdy_tbl[max_prio] : NULL);
 }
 
-ak_prio_t _ak_sched_rdy_ins(ak_tcb_t* task) {
+int _ak_sched_rdy_ins(ak_tcb_t* task) {
+#if AK_CFG_ASSERT_EN
   if (!task) {
-    return 0;
+    return -1;
   }
+#endif /* AK_CFG_ASSERT_EN */
 
   ak_prio_t res;
 
   if (ak_prio_bit_set(task->prio) < 0) {
-    res = 0;
+    res = -1;
 
   } else {
-    res = task->prio;
+    res = 0;
 
-    ak_tcb_t** tbl_ent = &_ak_rdy_tbl[task->prio - 1];
-    ak_tcb_t** ends_ent = &_ak_rdy_ends[task->prio - 1];
+    ak_tcb_t** tbl_ent = &_ak_rdy_tbl[task->prio];
+    ak_tcb_t** ends_ent = &_ak_rdy_ends[task->prio];
     if (!(*tbl_ent)) {
       *tbl_ent = *ends_ent = task;
     } else {
@@ -43,19 +67,20 @@ ak_prio_t _ak_sched_rdy_ins(ak_tcb_t* task) {
         offsetof(ak_tcb_t, sched_node)
       );
     }
-    _ak_sched_upd_high_rdy();
   }
 
   return res;
 }
 
 int _ak_sched_rdy_rm(ak_tcb_t* task) {
+#if AK_CFG_ASSERT_EN
   if (!task) {
     return -1;
   }
+#endif /* AK_CFG_ASSERT_EN */
 
-  ak_tcb_t** tbl_ent = &_ak_rdy_tbl[task->prio - 1];
-  ak_tcb_t** ends_ent = &_ak_rdy_ends[task->prio - 1];
+  ak_tcb_t** tbl_ent = &_ak_rdy_tbl[task->prio];
+  ak_tcb_t** ends_ent = &_ak_rdy_ends[task->prio];
 
   if (!(*tbl_ent)) {
     return -1;
@@ -68,12 +93,5 @@ int _ak_sched_rdy_rm(ak_tcb_t* task) {
     *tbl_ent = task->sched_node.next;
   }
   ak_list_rm(&task->sched_node, offsetof(ak_tcb_t, sched_node));
-  if (ak_sched_high_rdy == task) {
-    if (*tbl_ent) {
-      ak_sched_high_rdy = *tbl_ent;
-    } else {
-      _ak_sched_upd_high_rdy();
-    }
-  }
   return 0;
 }

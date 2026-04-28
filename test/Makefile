@@ -7,7 +7,7 @@ else
     RULE = all
 endif
 
-TESTS = list prio
+TESTS = list prio rdy_list
 
 .PHONY: prebuild all $(TESTS)
 
