@@ -1,20 +1,20 @@
 PRJ_DIR ?= $(shell git rev-parse --show-toplevel)
-$(info [FLAGS] PRJ_DIR=$(PRJ_DIR).)
+$(info [CFG] PRJ_DIR=$(PRJ_DIR).)
 
 PLATFORM ?= target
 PLATFORM_LCASE = $(shell echo $(PLATFORM) | tr '[:upper:]' '[:lower:]')
-$(info [TOOLCHAIN] PLATFORM must be either 'host' or 'target'.)
-$(info [TOOLCHAIN] PLATFORM=$(PLATFORM).)
+$(info [CFG] PLATFORM must be either 'host' or 'target'.)
+$(info [CFG] PLATFORM=$(PLATFORM).)
 
 MODE ?= debug
-$(info [TOOLCHAIN] MODE is either 'debug' or 'release'.)
-$(info [TOOLCHAIN] MODE=$(MODE).)
+$(info [CFG] MODE is either 'debug' or 'release'.)
+$(info [CFG] MODE=$(MODE).)
 MODE_LCASE = $(shell echo $(MODE) | tr '[:upper:]' '[:lower:]')
 
-$(info [FLAGS] Specify include paths via INCS (no -I).)
-$(info [FLAGS] Specify source files via SRCS.)
-$(info [FLAGS] Specify definitions via DEFS (no -D).)
-$(info [FLAGS] Specify linker script via LDSCRIPT (no -T).)
+$(info [CFG] Specify include paths via INCS (no -I).)
+$(info [CFG] Specify source files via SRCS.)
+$(info [CFG] Specify definitions via DEFS (no -D).)
+$(info [CFG] Specify linker script via LDSCRIPT (no -T).)
 
 AS = $(TOOLCHAIN)-gcc -x assembler-with-cpp
 
@@ -43,21 +43,21 @@ COMMON_FLAGS =\
 
 ifdef INCS
     INC_FLAGS = $(addprefix -I,$(INCS))
-    $(info [FLAGS] INCS=$(INCS).)
+    $(info [CFG] INCS=$(INCS).)
 endif
 
 ifdef SRCS
-    $(info [FLAGS] SRCS=$(SRCS).)
+    $(info [CFG] SRCS=$(SRCS).)
 endif
 
 ifdef DEFS
     DEF_FLAGS = $(addprefix -D,$(DEFS))
-    $(info [FLAGS] DEFS=$(DEFS).)
+    $(info [CFG] DEFS=$(DEFS).)
 endif
 
 ifdef LDSCRIPT
     LDSCRIPT_FLAG = -T$(LDSCRIPT)
-    $(info [FLAGS] LDSCRIPT=$(LDSCRIPT).)
+    $(info [CFG] LDSCRIPT=$(LDSCRIPT).)
 endif
 
 ifeq ($(MODE_LCASE),debug)

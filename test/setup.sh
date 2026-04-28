@@ -1,3 +1,6 @@
+PRJ_DIR=$(git rev-parse --show-toplevel)
+echo PRJ_DIR=$PRJ_DIR.
+
 if [[ ! -d "$PRJ_DIR/ext" ]]; then
     mkdir -p "$PRJ_DIR/ext"
 fi

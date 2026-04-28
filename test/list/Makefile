@@ -12,11 +12,9 @@ SRCS =\
 	$(PRJ_DIR)/ak/src/ak_list.c\
 	$(UNITY_SRCS)\
 	$(CURR_DIR)/tests.c\
-	$(CURR_DIR)/main.c\
+	$(CURR_DIR)/main.c
 
-include $(PRJ_DIR)/mk/toolchain.mk
-include $(PRJ_DIR)/mk/flags.mk
-include $(PRJ_DIR)/mk/files.mk
+include $(PRJ_DIR)/mk/cfg.mk
 
 .PHONY: all prebuild clean
 

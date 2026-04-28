@@ -15,9 +15,7 @@ SRCS =\
 	$(CURR_DIR)/tests.c\
 	$(CURR_DIR)/main.c
 
-include $(PRJ_DIR)/mk/toolchain.mk
-include $(PRJ_DIR)/mk/flags.mk
-include $(PRJ_DIR)/mk/files.mk
+include $(PRJ_DIR)/mk/cfg.mk
 
 .PHONY: all prebuild clean
 
