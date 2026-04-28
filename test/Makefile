@@ -1,18 +1,22 @@
-ifndef TEST
-    $(error [TEST] TEST is not defined.)
-else
+$(info [TEST] Specify test to build via TEST.)
+
+ifdef TEST
     $(info [TEST] TEST=$(TEST).)
+    RULE = $(shell echo $(TEST) | tr '[:upper:]' '[:lower:]')
+else
+    RULE = all
 endif
-TEST_LCASE = $(shell echo $(TEST) | tr '[:upper:]' '[:lower:]')
 
 TESTS = list prio
 
 .PHONY: prebuild all $(TESTS)
 
-$(TEST_LCASE): prebuild
-	make -C $(TEST_LCASE)
-
+ifeq ($(RULE),all)
 all: $(TESTS)
+else
+$(RULE): prebuild
+	make -C $@
+endif
 
 prebuild:
-	. ./setup.sh
+	. setup.sh

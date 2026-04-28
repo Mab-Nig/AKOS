@@ -1,7 +1,3 @@
-ifndef PRJ_DIR
-	$(error [RULES] PRJ_DIR is not defined.)
-endif
-
 $(PRJ_DIR)/build/%.o: $(PRJ_DIR)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
