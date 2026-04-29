@@ -1,38 +1,40 @@
 #ifndef AK_CRITICAL_H
-#define AK_CRITICALCRITICAL_H
+#define AK_CRITICAL_H
+
+#include "ak_cfg.h"
+#include "ak_cpu.h"
 
 #include "stdint.h"
-#include "ak_cfg.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif /* __cplusplus */
 
 extern uint32_t ak_sched_lock_nest_cnt;
 
 #if (AK_CFG_POST_DEFERRED_EN)
-#define AK_SCHED_LOCK()                     \
-        do {                                    \
-            OS_CRITICAL_ENTER();                \
-            extern ak_sched_lock_nest_cnt++;    \
-            OS_CRITICAL_EXIT();                 \
-        } while(0)
+#  define AK_CRITICAL_ENTER() CPU_CRITICAL_ENTER()
+#  define AK_CRITICAL_EXIT()  CPU_CRITICAL_EXIT()
 
-#define AK_SCHED_UNLOCK()                      \
-        do {                                    \
-            OS_CRITICAL_ENTER();                \
-            ak_sched_lock_nest_cnt--;           \
-            if (ak_sched_lock_nest_cnt == 0) {  \
-                ak_sched_run();                 \
-            }                                   \
-            OS_CRITICAL_EXIT();                 \
-        }   while(0)
-#endif /* AK_CFG_POST_DEFERRED_EN */
+#  define AK_SCHED_LOCK()                                                      \
+    do {                                                                       \
+      CPU_CRITICAL_ENTER();                                                    \
+      ++ak_sched_lock_nest_cnt;                                                \
+      CPU_CRITICAL_EXIT();                                                     \
+    } while (0)
 
-#if (!AK_CFG_POST_DEFERRED_EN)
-#define AK_CRITICAL_ENTER()         OS_CRITICAL_ENTER()
-#define AK_CRITICAL_EXIT()          OS_CRITICAL_EXIT()
+#  define AK_SCHED_UNLOCK()                                                    \
+    do {                                                                       \
+      CPU_CRITICAL_ENTER();                                                    \
+      --ak_sched_lock_nest_cnt;                                                \
+      if (ak_sched_lock_nest_cnt == 0) {                                       \
+        ak_sched_run();                                                        \
+      }                                                                        \
+      CPU_CRITICAL_EXIT();                                                     \
+    } while (0)
+#else /* AK_CFG_POST_DEFERRED_EN */
+#  define AK_CRITICAL_ENTER() CPU_CRITICAL_ENTER()
+#  define AK_CRITICAL_EXIT()  CPU_CRITICAL_EXIT()
 #endif /* !AK_CFG_POST_DEFERRED_EN */
 
 #ifdef __cplusplus
