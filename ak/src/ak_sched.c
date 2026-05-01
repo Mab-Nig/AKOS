@@ -7,8 +7,9 @@
 #include <stddef.h>
 #include <stdio.h>
 
-ak_tcb_t* ak_sched_run;
-ak_tcb_t* ak_sched_high_rdy;
+ak_tcb_t* g_ak_sched_run;
+ak_tcb_t* g_ak_sched_high_rdy;
+uint32_t g_ak_sched_lock_nest_cnt;
 static ak_tcb_t* _ak_rdy_tbl[AK_CFG_PRIO_MAX + 1];
 static ak_tcb_t* _ak_rdy_ends[AK_CFG_PRIO_MAX + 1];
 
@@ -17,8 +18,8 @@ static int _ak_sched_rdy_ins(ak_tcb_t* task);
 static int _ak_sched_rdy_rm(ak_tcb_t* task);
 
 void ak_sched_reset(void) {
-  ak_sched_run = NULL;
-  ak_sched_high_rdy = NULL;
+  g_ak_sched_run = NULL;
+  g_ak_sched_high_rdy = NULL;
   ak_prio_reset();
   for (int i = 0; i <= AK_CFG_PRIO_MAX; ++i) {
     _ak_rdy_tbl[i] = NULL;
@@ -26,20 +27,20 @@ void ak_sched_reset(void) {
   }
 }
 
-void ak_sched_turnover(void) {
+void ak_sched_switch(void) {
   _ak_sched_upd_high_rdy();
 
-  ak_tcb_t* tmp = ak_sched_run;
-  ak_sched_run = ak_sched_high_rdy;
-  ak_sched_high_rdy = tmp;
+  ak_tcb_t* tmp = g_ak_sched_run;
+  g_ak_sched_run = g_ak_sched_high_rdy;
+  g_ak_sched_high_rdy = tmp;
 
-  _ak_sched_rdy_rm(ak_sched_run);
-  _ak_sched_rdy_ins(ak_sched_high_rdy);
+  _ak_sched_rdy_rm(g_ak_sched_run);
+  _ak_sched_rdy_ins(g_ak_sched_high_rdy);
 }
 
 void _ak_sched_upd_high_rdy(void) {
   ak_prio_t max_prio = ak_prio_get_max();
-  ak_sched_high_rdy = (max_prio >= 0 ? _ak_rdy_tbl[max_prio] : NULL);
+  g_ak_sched_high_rdy = (max_prio >= 0 ? _ak_rdy_tbl[max_prio] : NULL);
 }
 
 int _ak_sched_rdy_ins(ak_tcb_t* task) {

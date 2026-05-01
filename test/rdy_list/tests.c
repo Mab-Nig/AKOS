@@ -27,7 +27,7 @@ void test_rdyList_multiPrio(void) {
     _ak_sched_upd_high_rdy();
     TEST_ASSERT_EQUAL_PTR(_tasks + i, _ak_rdy_tbl[i]);
     TEST_ASSERT_EQUAL_PTR(_tasks + i, _ak_rdy_ends[i]);
-    TEST_ASSERT_EQUAL_PTR(_tasks + i, ak_sched_high_rdy);
+    TEST_ASSERT_EQUAL_PTR(_tasks + i, g_ak_sched_high_rdy);
   }
 }
 
@@ -38,7 +38,7 @@ void test_rdyList_singlePrio(void) {
     _ak_sched_upd_high_rdy();
     TEST_ASSERT_EQUAL_PTR(_tasks, _ak_rdy_tbl[0]);
     TEST_ASSERT_EQUAL_PTR(_tasks + i, _ak_rdy_ends[0]);
-    TEST_ASSERT_EQUAL_PTR(_tasks, ak_sched_high_rdy);
+    TEST_ASSERT_EQUAL_PTR(_tasks, g_ak_sched_high_rdy);
   }
 }
 
@@ -51,11 +51,11 @@ void test_rdyList_turnover(void) {
 
   ak_tcb_t task = {.prio = AK_CFG_PRIO_MAX};
   ak_tcb_t *old_high_rdy = _ak_rdy_tbl[AK_CFG_PRIO_MAX];
-  ak_sched_run = &task;
-  ak_sched_turnover();
-  TEST_ASSERT_EQUAL_PTR(&task, ak_sched_high_rdy);
-  TEST_ASSERT_EQUAL_PTR(old_high_rdy, ak_sched_run);
+  g_ak_sched_run = &task;
+  ak_sched_switch();
+  TEST_ASSERT_EQUAL_PTR(&task, g_ak_sched_high_rdy);
+  TEST_ASSERT_EQUAL_PTR(old_high_rdy, g_ak_sched_run);
   TEST_ASSERT_EQUAL_PTR(&task, _ak_rdy_ends[AK_CFG_PRIO_MAX]);
   _ak_sched_upd_high_rdy();
-  TEST_ASSERT(old_high_rdy != ak_sched_high_rdy);
+  TEST_ASSERT(old_high_rdy != g_ak_sched_high_rdy);
 }

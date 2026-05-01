@@ -8,7 +8,7 @@ include $(PRJ_DIR)/ak/Makefile.mk
 include $(PRJ_DIR)/ext/Makefile.mk
 include $(PRJ_DIR)/port/Makefile.mk
 
-INCS = $(AK_INCS) $(UNITY_INCS) $(PRJ_DIR)/ak/src $(PORT_INCS)
+INCS = $(AK_INCS) $(UNITY_INCS) $(PRJ_DIR)/ak/src $(PORT_INCS) $(CMSIS_INCS)
 SRCS =\
 	$(PRJ_DIR)/ak/src/ak_prio.c\
 	$(PRJ_DIR)/ak/src/ak_list.c\
