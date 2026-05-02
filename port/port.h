@@ -1,7 +1,7 @@
 #ifndef PORT_H
 #define PORT_H
 
-#include "arch/port_arch.h"
-#include "compiler/port_compiler.h"
+#include "arch/port.h"
+#include "compiler/port.h"
 
 #endif /* PORT_H */

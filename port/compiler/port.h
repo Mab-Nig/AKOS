@@ -2,7 +2,7 @@
 #define PORT_COMPILER_H
 
 #ifdef __GNUC__
-#  include "gcc/cpu.h"
+#  include "gcc/port.h"
 #endif /* __GNUC__ */
 
 #endif /* PORT_COMPILER_H */

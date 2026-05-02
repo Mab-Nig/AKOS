@@ -7,8 +7,6 @@
 
 #define AK_CFG_PRIO_MAX 255u
 
-#define AK_CFG_ASSERT_EN 1u
-
 #define AK_CFG_CRIT_BLK_IRQ_EN 1
 
 #endif /* AK_CFG_H */

@@ -32,12 +32,12 @@ void ak_prio_reset(void) {
 }
 
 int ak_prio_bit_set(ak_prio_t prio) {
-#if AK_CFG_ASSERT_EN  
+#ifndef NDEBUG
   if (prio < 0 || prio > AK_CFG_PRIO_MAX) {
     return -1;
   }
-#endif /* AK_CFG_ASSERT_EN */
-  
+#endif /* NDEBUG */
+
   size_t ent = prio >> AK_NPRIO_PER_ENT_POW2;
   size_t offset = prio & (AK_NPRIO_PER_ENT - 1);
   _ak_prio_bitset[ent] |= 1LL << offset;
@@ -45,11 +45,11 @@ int ak_prio_bit_set(ak_prio_t prio) {
 }
 
 int ak_prio_bit_clear(ak_prio_t prio) {
-#if AK_CFG_ASSERT_EN  
+#ifndef NDEBUG
   if (prio < 0 || prio > AK_CFG_PRIO_MAX) {
     return -1;
   }
-#endif /* AK_CFG_ASSERT_EN */
+#endif /* NDEBUG */
 
   size_t ent = prio >> AK_NPRIO_PER_ENT_POW2;
   size_t offset = prio & (AK_NPRIO_PER_ENT - 1);

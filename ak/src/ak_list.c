@@ -6,12 +6,12 @@
 
 void *
 ak_list_ins_bef(ak_list_node_t *pos, ak_list_node_t *new_node, size_t offset) {
-#if AK_CFG_ASSERT_EN  
+#ifndef NDEBUG
   if (!pos || !new_node) {
     return NULL;
   }
-#endif /* AK_CFG_ASSERT_EN */
-  
+#endif /* NDEBUG */
+
   void *new_wrapper = (uint8_t *)new_node - offset;
   new_node->next = (uint8_t *)pos - offset;
   new_node->prev = pos->prev;
@@ -24,11 +24,11 @@ ak_list_ins_bef(ak_list_node_t *pos, ak_list_node_t *new_node, size_t offset) {
 
 void *
 ak_list_ins_aft(ak_list_node_t *pos, ak_list_node_t *new_node, size_t offset) {
-#if AK_CFG_ASSERT_EN
+#ifndef NDEBUG
   if (!pos || !new_node) {
     return NULL;
   }
-#endif /* AK_CFG_ASSERT_EN */
+#endif /* NDEBUG */
 
   void *new_wrapper = (uint8_t *)new_node - offset;
   new_node->prev = (uint8_t *)pos - offset;
@@ -41,12 +41,12 @@ ak_list_ins_aft(ak_list_node_t *pos, ak_list_node_t *new_node, size_t offset) {
 }
 
 void *ak_list_rm(ak_list_node_t *pos, size_t offset) {
-#if AK_CFG_ASSERT_EN  
+#ifndef NDEBUG
   if (!pos) {
     return NULL;
   }
-#endif /* AK_CFG_ASSERT_EN */
-  
+#endif /* NDEBUG */
+
   if (pos->prev) {
     FWD_OFFSET(ak_list_node_t *, pos->prev, offset)->next = pos->next;
   }
