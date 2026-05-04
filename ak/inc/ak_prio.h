@@ -18,7 +18,7 @@ int ak_prio_bit_clear(ak_prio_t prio);
 /*
  * @return Highest set priority. -1 if none is found.
  */
-ak_prio_t ak_prio_get_max(void);
+ak_prio_t ak_prio_get_top(void);
 
 #ifdef __cplusplus
 }
