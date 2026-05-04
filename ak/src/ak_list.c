@@ -1,5 +1,4 @@
 #include "ak_list.h"
-#include "ak_cfg.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -47,11 +46,17 @@ void *ak_list_rm(ak_list_node_t *pos, size_t offset) {
   }
 #endif /* NDEBUG */
 
-  if (pos->prev) {
-    FWD_OFFSET(ak_list_node_t *, pos->prev, offset)->next = pos->next;
+  void *res = NULL;
+  void *wrapper = (uint8_t *)pos - offset;
+  if (pos->prev != wrapper) {
+    res = pos->next;
+    if (pos->prev) {
+      FWD_OFFSET(ak_list_node_t *, pos->prev, offset)->next = pos->next;
+    }
+    if (pos->next) {
+      FWD_OFFSET(ak_list_node_t *, pos->next, offset)->prev = pos->prev;
+    }
   }
-  if (pos->next) {
-    FWD_OFFSET(ak_list_node_t *, pos->next, offset)->prev = pos->prev;
-  }
-  return pos->next;
+  pos->prev = pos->next = NULL;
+  return res;
 }
