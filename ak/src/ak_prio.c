@@ -7,11 +7,11 @@
 #include <string.h>
 
 #if (__SIZEOF_SIZE_T__ <= 4)
-#  define CLZ(num) PORT_CLZ(num)
-#  define CTZ(num) PORT_CTZ(num)
+#  define CLZ(num) __builtin_clz(num)
+#  define CTZ(num) __builtin_ctz(num)
 #else
-#  define CLZ(num) PORT_CLZLL(num)
-#  define CTZ(num) PORT_CTZLL(num)
+#  define CLZ(num) __builtin_clzll(num)
+#  define CTZ(num) __builtin_ctzll(num)
 #endif /* __SIZEOF_SIZE_T__ */
 
 #ifdef AK_CFG_PRIO_MAX
@@ -57,7 +57,7 @@ int ak_prio_bit_clear(ak_prio_t prio) {
   return 0;
 }
 
-ak_prio_t ak_prio_get_max(void) {
+ak_prio_t ak_prio_get_top(void) {
   size_t res = (AK_PRIO_BITSET_SZ << AK_NPRIO_PER_ENT_POW2) - 1;
   for (int i = AK_PRIO_BITSET_SZ - 1; i >= 0; --i) {
     if (_ak_prio_bitset[i]) {

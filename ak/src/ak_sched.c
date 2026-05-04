@@ -1,5 +1,6 @@
 #include "ak_sched.h"
 #include "ak_cfg.h"
+#include "ak_cpu.h"
 #include "ak_list.h"
 #include "ak_prio.h"
 #include "ak_task.h"
@@ -9,59 +10,66 @@
 #include <stdio.h>
 
 ak_tcb_t* g_ak_sched_run;
-ak_tcb_t* g_ak_sched_high_rdy;
+
 static uint32_t _ak_sched_lock_nest_cnt;
 static ak_tcb_t* _ak_rdy_tbl[AK_CFG_PRIO_MAX + 1];
-static ak_tcb_t* _ak_rdy_ends[AK_CFG_PRIO_MAX + 1];
+static ak_tcb_t* _ak_rdy_runs[AK_CFG_PRIO_MAX + 1];
 
-static inline void _ak_sched_upd_high_rdy(void);
 static int _ak_sched_rdy_ins(ak_tcb_t* task);
 static int _ak_sched_rdy_rm(ak_tcb_t* task);
 
 void ak_sched_reset(void) {
+  AK_CPU_CRIT_ENTER();
+
   g_ak_sched_run = NULL;
   g_ak_sched_high_rdy = NULL;
   ak_prio_reset();
   for (int i = 0; i <= AK_CFG_PRIO_MAX; ++i) {
-    _ak_rdy_tbl[i] = NULL;
-    _ak_rdy_ends[i] = NULL;
+    _ak_rdy_tbl[i] = _ak_rdy_runs[i] = NULL;
   }
+
+  AK_CPU_CRIT_EXIT();
 }
 
-void ak_sched_switch(void) {
-  _ak_sched_upd_high_rdy();
+bool ak_sched_rotate(void) {
+  AK_CPU_CRIT_ENTER();
 
-  ak_tcb_t* tmp = g_ak_sched_run;
-  g_ak_sched_run = g_ak_sched_high_rdy;
-  g_ak_sched_high_rdy = tmp;
+  bool res = 0;
+  if (g_ak_sched_run->sched_node.next == g_ak_sched_run) {
+    ak_prio_t top_prio = ak_prio_get_top();
+    res = top_prio > g_ak_sched_run->prio;
+    g_ak_sched_high_rdy = _ak_rdy_runs[top_prio];
+  } else {
+    res = 1;
+    g_ak_sched_high_rdy = g_ak_sched_run->sched_node.next;
+  }
 
-  _ak_sched_rdy_rm(g_ak_sched_run);
-  _ak_sched_rdy_ins(g_ak_sched_high_rdy);
+  AK_CPU_CRIT_EXIT();
+  return res;
 }
 
 void ak_sched_lock(void) {
   AK_CPU_CRIT_ENTER();
+
   ++_ak_sched_lock_nest_cnt;
 #ifdef PORT_SCHED_LOCK
   PORT_SCHED_LOCK();
 #endif /* PORT_SCHED_LOCK */
+
   AK_CPU_CRIT_EXIT();
 }
 
 void ak_sched_unlock(void) {
   AK_CPU_CRIT_ENTER();
+
   --_ak_sched_lock_nest_cnt;
   if (!_ak_sched_lock_nest_cnt) {
 #ifdef PORT_SCHED_LOCK
     PORT_SCHED_UNLOCK();
 #endif /* PORT_SCHED_LOCK */
   }
-  AK_CPU_CRIT_EXIT();
-}
 
-void _ak_sched_upd_high_rdy(void) {
-  ak_prio_t max_prio = ak_prio_get_max();
-  g_ak_sched_high_rdy = (max_prio >= 0 ? _ak_rdy_tbl[max_prio] : NULL);
+  AK_CPU_CRIT_EXIT();
 }
 
 int _ak_sched_rdy_ins(ak_tcb_t* task) {
@@ -71,7 +79,7 @@ int _ak_sched_rdy_ins(ak_tcb_t* task) {
   }
 #endif /* NDEBUG */
 
-  ak_prio_t res;
+  int res;
 
   if (ak_prio_bit_set(task->prio) < 0) {
     res = -1;
@@ -80,12 +88,13 @@ int _ak_sched_rdy_ins(ak_tcb_t* task) {
     res = 0;
 
     ak_tcb_t** tbl_ent = &_ak_rdy_tbl[task->prio];
-    ak_tcb_t** ends_ent = &_ak_rdy_ends[task->prio];
     if (!(*tbl_ent)) {
-      *tbl_ent = *ends_ent = task;
+      ak_tcb_t** runs_ent = &_ak_rdy_runs[task->prio];
+      task->sched_node.prev = task->sched_node.next = task;
+      *tbl_ent = *runs_ent = task;
     } else {
-      *ends_ent = ak_list_ins_aft(
-        &(*ends_ent)->sched_node, &task->sched_node,
+      tbl_ent = ak_list_ins_bef(
+        &(*tbl_ent)->sched_node, &task->sched_node,
         offsetof(ak_tcb_t, sched_node)
       );
     }
@@ -102,18 +111,21 @@ int _ak_sched_rdy_rm(ak_tcb_t* task) {
 #endif /* NDEBUG */
 
   ak_tcb_t** tbl_ent = &_ak_rdy_tbl[task->prio];
-  ak_tcb_t** ends_ent = &_ak_rdy_ends[task->prio];
+  ak_tcb_t** runs_ent = &_ak_rdy_runs[task->prio];
 
+#ifndef NDEBUG
   if (!(*tbl_ent)) {
     return -1;
   }
+#endif /* NDEBUG */
 
-  if (*ends_ent == task) {
-    *ends_ent = task->sched_node.prev;
+  ak_tcb_t* next_task =
+    ak_list_rm(&task->sched_node, offsetof(ak_tcb_t, sched_node));
+  if (*runs_ent == task) {
+    *runs_ent = next_task;
   }
   if (*tbl_ent == task) {
-    *tbl_ent = task->sched_node.next;
+    *tbl_ent = next_task;
   }
-  ak_list_rm(&task->sched_node, offsetof(ak_tcb_t, sched_node));
   return 0;
 }

@@ -44,19 +44,13 @@ static void *_ak_mem_start_p;
 
 /* These two must stick together. */
 static _ak_mem_blk_hdr_t
-#ifdef __GNUC__
-  __attribute__((aligned(AK_MEM_ALIGN)))
-#endif /* __GNUC__ */
-  _ak_mem_ini_blk = {
+  __attribute__((aligned(AK_MEM_ALIGN))) _ak_mem_ini_blk = {
     .node = {.prev = NULL, .next = NULL},
     .sz = AK_BLK_HDR_SZ + AK_MEM_SZ,
     .state = AK_BLK_FREE
 };
 static uint8_t
-#ifdef __GNUC__
-  __attribute__((aligned(AK_MEM_ALIGN)))
-#endif /* __GNUC__ */
-  _ak_mem_arr[AK_CFG_HEAP_SZ];
+  __attribute__((aligned(AK_MEM_ALIGN))) _ak_mem_arr[AK_CFG_HEAP_SZ];
 
 static void _ak_mem_init(void);
 static inline _ak_mem_blk_hdr_t *_ak_mem_find_fit(size_t sz);
