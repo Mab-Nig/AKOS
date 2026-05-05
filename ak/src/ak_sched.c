@@ -34,14 +34,13 @@ void ak_sched_reset(void) {
 bool ak_sched_rotate(void) {
   AK_CPU_CRIT_ENTER();
 
-  bool res = 0;
-  if (g_ak_sched_run->sched_node.next == g_ak_sched_run) {
-    ak_prio_t top_prio = ak_prio_get_top();
-    res = top_prio > g_ak_sched_run->prio;
-    g_ak_sched_high_rdy = _ak_rdy_runs[top_prio];
-  } else {
-    res = 1;
-    g_ak_sched_high_rdy = g_ak_sched_run->sched_node.next;
+  ak_prio_t top_prio = ak_prio_get_top();
+  bool has_higher_prio = (top_prio > g_ak_sched_run->prio);
+  bool is_prio_single = (g_ak_sched_run->sched_node.next == g_ak_sched_run);
+  bool res = has_higher_prio || !is_prio_single;
+  if (res) {
+    g_ak_sched_high_rdy = has_higher_prio ? _ak_rdy_runs[top_prio]
+                                          : g_ak_sched_run->sched_node.next;
   }
 
   AK_CPU_CRIT_EXIT();
